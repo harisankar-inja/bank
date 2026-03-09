@@ -1,0 +1,20 @@
+server:
+  port: 7070
+
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
+
+  flyway:
+    location:
+      - classpath/db.migration
+    baseline-on-migrate: true
+    validate-on-migrate: false
+
+#  activemq:
+#    broker-url: tcp://localhost:61616
+#    user: admin
+#    password: admin
+#
+mybatis:
+  type-handlers-package: com.harts.bank.typehandlers
