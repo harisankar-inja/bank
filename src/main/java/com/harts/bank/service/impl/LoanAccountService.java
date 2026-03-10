@@ -1,7 +1,7 @@
 package com.harts.bank.service.impl;
 
-import com.harts.bank.api.request.AccountRequest;
-import com.harts.bank.api.response.Account;
+import com.harts.bank.api.request.SavingsAccountRequest;
+import com.harts.bank.api.response.SavingsAccountResponse;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
 import com.harts.bank.repository.AccountRepo;
@@ -9,7 +9,6 @@ import com.harts.bank.repository.CustomerRepo;
 import com.harts.bank.service.AccountService;
 import com.harts.bank.service.CustomerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,14 +26,14 @@ public class LoanAccountService implements AccountService {
      * Loan account creation is a two step process, first we need to create a savings account for the customer (if not already exists)
      * and then we can create a loan account for the customer. This is because we need to link the loan account to the savings account for the customer.
      * @param accountRequest
-     * @param isActive - this flag is set to false only if the customer does not exist, so that we can skip db call to fetch customer details again
+     * @param checkForExistingCustomer - this flag is set to false only if the customer does not exist, so that we can skip db call to fetch customer details again
      *                 in savings account creation process.
      * @return
      */
     @Override
-    public Account createAccount(AccountRequest accountRequest, boolean isActive) {
+    public SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest, boolean checkForExistingCustomer) {
         Optional<Customer> customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
-        Account account = new Account();
+        SavingsAccountResponse account = new SavingsAccountResponse();
         if(customer.isEmpty()){
             account = savingsAccountService.createAccount(accountRequest, false);
         } else {
@@ -45,12 +44,12 @@ public class LoanAccountService implements AccountService {
     }
 
     @Override
-    public List<Account> getAccountsByCustomerInfoFile(String cif) {
+    public List<SavingsAccountResponse> getAccountsByCustomerInfoFile(String cif) {
         return List.of();
     }
 
     @Override
-    public Account getAccountDetails(String accountNumber) {
+    public SavingsAccountResponse getAccountDetails(String accountNumber) {
         return null;
     }
 }

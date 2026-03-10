@@ -1,7 +1,6 @@
 package com.harts.bank.repository;
 
 import com.harts.bank.enums.AccountType;
-import com.harts.bank.api.response.Account;
 import com.harts.bank.model.SavingsAccount;
 import org.apache.ibatis.annotations.*;
 

@@ -5,9 +5,8 @@ import com.harts.bank.enums.SubAccountType;
 import lombok.Data;
 
 @Data
-public class Account {
+public class SavingsAccountResponse {
 
-    // common fields for both savings and loan accounts
     private String accountNumber;
     private String cif;
     private String accountHolderName;
@@ -16,11 +15,5 @@ public class Account {
     private String ifscCode;
     private AccountType accountType;
     private boolean active;
-
-    // fields specific to savings account
     private double balance;
-
-    // fields specific to loan account
-    private SubAccountType subAccountType;
-    private double loanAmount;
 }

@@ -18,10 +18,12 @@ public class CustomerService {
 
     private final CustomerRepo customerRepo;
 
-    public void registerCustomer(Customer customer) {
-        Optional<Customer> cust = customerRepo.findByCif(customer.getCustomerId());
-        if (cust.isPresent()) {
-            throw new UniqueConstraintException("Customer with ID " + customer.getCustomerId() + " already exists");
+    public void registerCustomer(Customer customer, boolean checkForExistingCustomer) {
+        if(checkForExistingCustomer) {
+            Optional<Customer> cust = customerRepo.findByCif(customer.getCustomerId());
+            if (cust.isPresent()) {
+                throw new UniqueConstraintException("Customer with ID " + customer.getCustomerId() + " already exists");
+            }
         }
         customer.setCreatedAt(LocalDateTime.now());
         customer.setUpdatedAt(LocalDateTime.now());
@@ -109,6 +111,19 @@ public class CustomerService {
             Customer customer = customerOpt.get();
             customer.setPhoneNumber(phoneNumber);
             customer.setEmail(email);
+            customer.setUpdatedAt(LocalDateTime.now());
+            customer.setUpdatedBy("system");
+            customerRepo.update(customer);
+        } else {
+            throw new CustomerNotFoundException("Customer with ID " + customerId + " not found");
+        }
+    }
+
+    public void activateCustomer(String customerId) {
+        Optional<Customer> customerOpt = customerRepo.findByCif(customerId);
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            customer.setActive(true);
             customer.setUpdatedAt(LocalDateTime.now());
             customer.setUpdatedBy("system");
             customerRepo.update(customer);

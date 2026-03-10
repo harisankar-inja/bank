@@ -1,15 +1,15 @@
 package com.harts.bank.service;
 
-import com.harts.bank.api.request.AccountRequest;
-import com.harts.bank.api.response.Account;
+import com.harts.bank.api.request.SavingsAccountRequest;
+import com.harts.bank.api.response.SavingsAccountResponse;
 
 import java.util.List;
 
 public interface AccountService {
 
-    Account createAccount(AccountRequest accountRequest, boolean isActive);
+    SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest, boolean isActive);
 
-    List<Account> getAccountsByCustomerInfoFile(String cif);
+    List<SavingsAccountResponse> getAccountsByCustomerInfoFile(String cif);
 
-    Account getAccountDetails(String accountNumber);
+    SavingsAccountResponse getAccountDetails(String accountNumber);
 }

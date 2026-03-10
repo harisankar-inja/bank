@@ -1,9 +1,9 @@
 package com.harts.bank.service.impl;
 
-import com.harts.bank.api.request.AccountRequest;
+import com.harts.bank.api.request.SavingsAccountRequest;
 import com.harts.bank.enums.AccountType;
 import com.harts.bank.exceptions.CustomerNotFoundException;
-import com.harts.bank.api.response.Account;
+import com.harts.bank.api.response.SavingsAccountResponse;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
 import com.harts.bank.repository.AccountRepo;
@@ -31,40 +31,44 @@ public class SavingsAccountService implements AccountService {
 
     @Override
     @Transactional
-    public Account createAccount(AccountRequest accountRequest, boolean isActive) {
+    public SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest, boolean checkForExistingCustomer) {
         Optional<Customer> customer = Optional.empty();
         SavingsAccount savingsAccount = new SavingsAccount();
-        if(isActive) {
+        if(checkForExistingCustomer) {
             customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
         }
         if (customer.isPresent()) {
-            if(checkIfSavingsAccountExists(customer.get().getCustomerId(), accountRequest.getBankName(), accountRequest.getAccountType())) {
-                throw new CustomerNotFoundException("Customer with Aadhar number " + accountRequest.getAadharNumber() + " already has a savings account with bank " + accountRequest.getBankName());
+            if(customer.get().isActive()) {
+                if (checkIfSavingsAccountExists(customer.get().getCustomerId(), accountRequest.getBankName(), accountRequest.getAccountType())) {
+                    throw new CustomerNotFoundException("Customer with Aadhar number " + accountRequest.getAadharNumber() + " already has a savings account with bank " + accountRequest.getBankName());
+                }
+                setSavingsAccountDetails(savingsAccount, accountRequest, customer.get().getCustomerId());
+                savingsAccount.setAccountHolderName(customer.get().getFirstName() + " " + customer.get().getLastName());
+            } else {
+                throw new CustomerNotFoundException("Cif is already present! Customer with Aadhar number " + accountRequest.getAadharNumber() + " is not active. Cannot create savings account.");
             }
-            setSavingsAccountDetails(savingsAccount, accountRequest, customer.get().getCustomerId());
-            savingsAccount.setAccountHolderName(customer.get().getFirstName() + " " + customer.get().getLastName());
         } else {
             Customer newCustomer = buildCustomerDetails(accountRequest);
-            customerService.registerCustomer(newCustomer);
+            customerService.registerCustomer(newCustomer, false);
             setSavingsAccountDetails(savingsAccount, accountRequest, newCustomer.getCustomerId());
             savingsAccount.setAccountHolderName(accountRequest.getFirstName() + " " + accountRequest.getLastName());
         }
         accountRepo.persist(savingsAccount);
-        Account account = new Account();
+        SavingsAccountResponse account = new SavingsAccountResponse();
         mapSavingsAccountToAccount(account, savingsAccount);
         return account;
     }
 
     @Override
-    public List<Account> getAccountsByCustomerInfoFile(String cif) {
+    public List<SavingsAccountResponse> getAccountsByCustomerInfoFile(String cif) {
         List<SavingsAccount> savingsAccounts = accountRepo.findByCustomerId(cif, LOAN);
         if (savingsAccounts.isEmpty()) {
             throw new CustomerNotFoundException("No accounts found for customer with CIF " + cif);
         }
-        List<Account> accounts = new ArrayList<>();
+        List<SavingsAccountResponse> accounts = new ArrayList<>();
         for(SavingsAccount savingsAccount : savingsAccounts) {
             if (savingsAccount.getAccountType() != LOAN) {
-                Account account = new Account();
+                SavingsAccountResponse account = new SavingsAccountResponse();
                 mapSavingsAccountToAccount(account, savingsAccount);
                 accounts.add(account);
             }
@@ -73,7 +77,7 @@ public class SavingsAccountService implements AccountService {
     }
 
     @Override
-    public Account getAccountDetails(String accountNumber) {
+    public SavingsAccountResponse getAccountDetails(String accountNumber) {
         Optional<SavingsAccount> optionalAccount = accountRepo.findByAccountNumber(accountNumber);
         if (optionalAccount.isEmpty()) {
             throw new CustomerNotFoundException("Account with number " + accountNumber + " not found");
@@ -82,7 +86,7 @@ public class SavingsAccountService implements AccountService {
         if (savingsAccount.getAccountType() == LOAN) {
             throw new CustomerNotFoundException("Account with number " + accountNumber + " is a LOAN account and cannot be retrieved");
         }
-        Account account = new Account();
+        SavingsAccountResponse account = new SavingsAccountResponse();
         mapSavingsAccountToAccount(account, savingsAccount);
         return account;
     }
@@ -92,7 +96,7 @@ public class SavingsAccountService implements AccountService {
         return optionalAccount.isPresent();
     }
 
-    private void setSavingsAccountDetails(SavingsAccount savingsAccount, AccountRequest accountRequest, String customerId) {
+    private void setSavingsAccountDetails(SavingsAccount savingsAccount, SavingsAccountRequest accountRequest, String customerId) {
         savingsAccount.setCif(customerId);
         savingsAccount.setAccountNumber(CommonUtils.generateRandomNumber(12));
         savingsAccount.setBankName(accountRequest.getBankName());
@@ -102,12 +106,14 @@ public class SavingsAccountService implements AccountService {
         savingsAccount.setBalance(accountRequest.getInitialDeposit());
     }
 
-    private Customer buildCustomerDetails(AccountRequest accountRequest) {
+    private Customer buildCustomerDetails(SavingsAccountRequest accountRequest) {
         Customer customer = new Customer();
         customer.setCustomerId(CommonUtils.generateRandomNumber(8));
+        customer.setBankName(accountRequest.getBankName());
         customer.setFirstName(accountRequest.getFirstName());
         customer.setLastName(accountRequest.getLastName());
         customer.setAdhaarNumber(accountRequest.getAadharNumber());
+        customer.setPanNumber(accountRequest.getPanNumber());
         customer.setPhoneNumber(accountRequest.getPhoneNumber());
         customer.setEmail(accountRequest.getEmail());
         customer.setActive(true);
@@ -115,7 +121,7 @@ public class SavingsAccountService implements AccountService {
         return customer;
     }
 
-    private void mapSavingsAccountToAccount(Account account, SavingsAccount savingsAccount) {
+    private void mapSavingsAccountToAccount(SavingsAccountResponse account, SavingsAccount savingsAccount) {
         account.setAccountNumber(savingsAccount.getAccountNumber());
         account.setCif(savingsAccount.getCif());
         account.setAccountHolderName(savingsAccount.getAccountHolderName());

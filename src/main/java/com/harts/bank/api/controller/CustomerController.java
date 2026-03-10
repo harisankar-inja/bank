@@ -20,7 +20,7 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerCustomer(@Valid @RequestBody Customer customer) {
-        customerService.registerCustomer(customer);
+        customerService.registerCustomer(customer, true);
         return new ResponseEntity<>("Customer registered successfully", HttpStatus.OK);
     }
 
@@ -66,5 +66,11 @@ public class CustomerController {
     @GetMapping("/findByName")
     public ResponseEntity<List<Customer>> getCustomerByName(@RequestParam String firstName, @RequestParam String lastName) {
         return new ResponseEntity<>(customerService.getCustomerByName(firstName, lastName), HttpStatus.OK);
+    }
+
+    @GetMapping("/activate/{customerId}")
+    public ResponseEntity<String> activateCustomer(@PathVariable String customerId) {
+        customerService.activateCustomer(customerId);
+        return new ResponseEntity<>("Customer activated successfully", HttpStatus.OK);
     }
 }
