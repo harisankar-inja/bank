@@ -1,12 +1,13 @@
 package com.harts.bank.service;
 
-import com.harts.bank.model.Account;
+import com.harts.bank.api.request.AccountRequest;
+import com.harts.bank.api.response.Account;
 
 import java.util.List;
 
 public interface AccountService {
 
-    Account createAccount(String accountHolderName, double initialDeposit);
+    Account createAccount(AccountRequest accountRequest, boolean isActive);
 
     List<Account> getAccountsByCustomerInfoFile(String cif);
 

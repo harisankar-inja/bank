@@ -40,8 +40,8 @@ public interface CustomerRepo {
         @Select("SELECT * FROM customer_t WHERE first_name = #{firstName} AND last_name = #{lastName}")
     List<Customer> findByFirstNameAndLastName(@Param("firstName") String firstName, @Param("lastName") String lastName);
 
-     @Insert("INSERT INTO customer_t (cif, first_name, last_name, email, phn_nbr, adhr_no, pan_no, address, is_active, crt_at, crt_by, updt_at, updt_by) " +
-             "VALUES (#{customerId}, #{firstName}, #{lastName}, #{email}, #{phoneNumber}, #{adhaarNumber}, #{panNumber}, #{address}, #{isActive}, " +
+     @Insert("INSERT INTO customer_t (cif, bank_nm, first_name, last_name, email, phn_nbr, adhr_no, pan_no, address, is_active, crt_at, crt_by, updt_at, updt_by) " +
+             "VALUES (#{customerId}, #{bankName} ,#{firstName}, #{lastName}, #{email}, #{phoneNumber}, #{adhaarNumber}, #{panNumber}, #{address}, #{isActive}, " +
              "#{createdAt}, #{createdBy}, #{updatedAt}, #{updatedBy})")
     int persist(Customer customer);
 
@@ -52,4 +52,8 @@ public interface CustomerRepo {
              "adhr_no = #{adhaarNumber}, pan_no = #{panNumber}, address = #{address}, is_active = #{isActive}, crt_at = #{createdAt}, " +
              "crt_by = #{createdBy}, updt_at = #{updatedAt}, updt_by = #{updatedBy} WHERE cif = #{customerId}")
     void update(Customer customer);
+
+        @ResultMap("customerResultMap")
+        @Select("SELECT * FROM customer_t WHERE adhr_no = #{aadharNumber} AND bank_nm = #{bankName}")
+    Optional<Customer> findByAdhaarNumWithBank(String aadharNumber, String bankName);
 }

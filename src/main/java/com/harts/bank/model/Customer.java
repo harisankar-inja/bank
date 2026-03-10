@@ -1,18 +1,25 @@
 package com.harts.bank.model;
 
 import lombok.Data;
-
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Data
 public class Customer {
 
     private String customerId; //cif
+    @NotBlank
+    private String bankName;
+    @NotBlank
     private String firstName;
     private String lastName;
+    @NotBlank
     private String email;
+    @NotBlank
     private String phoneNumber;
+    @NotBlank
     private String adhaarNumber;
+    @NotBlank
     private String panNumber;
     private Address address;
     private boolean isActive;
