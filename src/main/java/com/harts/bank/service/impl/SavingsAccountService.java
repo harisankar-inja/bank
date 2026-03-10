@@ -4,6 +4,7 @@ import com.harts.bank.api.request.SavingsAccountRequest;
 import com.harts.bank.enums.AccountType;
 import com.harts.bank.exceptions.CustomerNotFoundException;
 import com.harts.bank.api.response.SavingsAccountResponse;
+import com.harts.bank.exceptions.InvalidRequestException;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
 import com.harts.bank.repository.SavingsAccountRepo;
@@ -12,6 +13,7 @@ import com.harts.bank.service.AccountService;
 import com.harts.bank.service.CustomerService;
 import com.harts.bank.utils.CommonUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,9 +47,14 @@ public class SavingsAccountService implements AccountService {
                 setSavingsAccountDetails(savingsAccount, accountRequest, customer.get().getCustomerId());
                 savingsAccount.setAccountHolderName(customer.get().getFirstName() + " " + customer.get().getLastName());
             } else {
-                throw new CustomerNotFoundException("Cif is already present! Customer with Aadhar number " + accountRequest.getAadharNumber() + " is not active. Cannot create savings account.");
+                throw new CustomerNotFoundException("Cif is already present! Customer with Aadhar number " + accountRequest.getAadharNumber()
+                        + " is not active. Cannot create savings account.");
             }
         } else {
+            if(validateAccountRequest(accountRequest)) {
+                throw new InvalidRequestException("Invalid account request. firstName, lastName, phoneNumber, email, " +
+                        "address are mandatory fields and must be valid.");
+            }
             Customer newCustomer = buildCustomerDetails(accountRequest);
             customerService.registerCustomer(newCustomer, false);
             setSavingsAccountDetails(savingsAccount, accountRequest, newCustomer.getCustomerId());
@@ -89,6 +96,18 @@ public class SavingsAccountService implements AccountService {
         SavingsAccountResponse account = new SavingsAccountResponse();
         mapSavingsAccountToAccount(account, savingsAccount);
         return account;
+    }
+
+    private boolean validateAccountRequest(SavingsAccountRequest accountRequest) {
+        return isBlank(accountRequest.getFirstName())
+            || isBlank(accountRequest.getLastName())
+            || isBlank(accountRequest.getPhoneNumber())
+            || isBlank(accountRequest.getEmail())
+            || accountRequest.getAddress() == null;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private boolean checkIfSavingsAccountExists(String customerId, String bankName, AccountType accountType) {

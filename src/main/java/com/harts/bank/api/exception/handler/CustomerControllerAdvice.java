@@ -1,6 +1,7 @@
 package com.harts.bank.api.exception.handler;
 
 import com.harts.bank.exceptions.CustomerNotFoundException;
+import com.harts.bank.exceptions.InvalidRequestException;
 import com.harts.bank.exceptions.UniqueConstraintException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,10 @@ public class CustomerControllerAdvice {
         response.put("validationErrors", errors);
         response.put("timestamp", java.time.Instant.now());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<String> handleInvalidRequestException(InvalidRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
