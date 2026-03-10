@@ -25,7 +25,7 @@ import static com.harts.bank.enums.AccountType.LOAN;
 
 @Service
 @RequiredArgsConstructor
-public class SavingsAccountService implements AccountService {
+public class SavingsAccountService implements AccountService<SavingsAccountRequest, SavingsAccountResponse> {
 
     private final CustomerRepo customerRepo;
     private final CustomerService customerService;
@@ -33,12 +33,10 @@ public class SavingsAccountService implements AccountService {
 
     @Override
     @Transactional
-    public SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest, boolean checkForExistingCustomer) {
+    public SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest) {
         Optional<Customer> customer = Optional.empty();
         SavingsAccount savingsAccount = new SavingsAccount();
-        if(checkForExistingCustomer) {
-            customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
-        }
+        customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
         if (customer.isPresent()) {
             if(customer.get().isActive()) {
                 if (checkIfSavingsAccountExists(customer.get().getCustomerId(), accountRequest.getBankName(), accountRequest.getAccountType())) {

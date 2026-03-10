@@ -1,8 +1,7 @@
 package com.harts.bank.api.controller;
 
-import com.harts.bank.api.request.SavingsAccountRequest;
-import com.harts.bank.api.response.SavingsAccountResponse;
-import com.harts.bank.service.impl.SavingsAccountService;
+import com.harts.bank.api.request.LoanAccountRequest;
+import com.harts.bank.service.impl.LoanAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,30 +9,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/loan-account")
 @RequiredArgsConstructor
-public class SavingsAccountController {
+public class LoanAccountController {
+    
+    private LoanAccountService loanAccountService;
 
-    private final SavingsAccountService savingsAccountService;
-
-    @PostMapping("/savings")
-    public ResponseEntity<SavingsAccountResponse> createSavingsAccount(@Valid @RequestBody SavingsAccountRequest accountRequest) {
+    @PostMapping("/loan")
+    public ResponseEntity<?> createLoanAccount(@Valid @RequestBody LoanAccountRequest accountRequest) {
         return new ResponseEntity<>(
-                savingsAccountService.createAccount(accountRequest),
+                loanAccountService.createAccount(accountRequest),
                 HttpStatus.OK);
     }
 
     @GetMapping("/cif/{cif}")
     public ResponseEntity<?> getAccountsByCustomerInfoFile(@PathVariable String cif) {
         return new ResponseEntity<>(
-                savingsAccountService.getAccountsByCustomerInfoFile(cif),
+                loanAccountService.getAccountsByCustomerInfoFile(cif),
                 HttpStatus.OK);
     }
 
     @GetMapping("/accountNumber/{accountNumber}")
     public ResponseEntity<?> getAccountByAccountNumber(@PathVariable String accountNumber) {
         return new ResponseEntity<>(
-                savingsAccountService.getAccountDetails(accountNumber),
+                loanAccountService.getAccountDetails(accountNumber),
                 HttpStatus.OK);
     }
 }

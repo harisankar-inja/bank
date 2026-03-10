@@ -1,7 +1,8 @@
 package com.harts.bank.service.impl;
 
-import com.harts.bank.api.request.SavingsAccountRequest;
-import com.harts.bank.api.response.SavingsAccountResponse;
+import com.harts.bank.api.request.LoanAccountRequest;
+import com.harts.bank.api.response.LoanAccountResponse;
+import com.harts.bank.exceptions.CustomerNotFoundException;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
 import com.harts.bank.repository.SavingsAccountRepo;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 //@Service
 @RequiredArgsConstructor
-public class LoanAccountService implements AccountService {
+public class LoanAccountService implements AccountService<LoanAccountRequest, LoanAccountResponse> {
 
     private final CustomerRepo customerRepo;
     private final CustomerService customerService;
@@ -26,16 +27,14 @@ public class LoanAccountService implements AccountService {
      * Loan account creation is a two step process, first we need to create a savings account for the customer (if not already exists)
      * and then we can create a loan account for the customer. This is because we need to link the loan account to the savings account for the customer.
      * @param accountRequest
-     * @param checkForExistingCustomer - this flag is set to false only if the customer does not exist, so that we can skip db call to fetch customer details again
-     *                 in savings account creation process.
      * @return
      */
     @Override
-    public SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest, boolean checkForExistingCustomer) {
+    public LoanAccountResponse createAccount(LoanAccountRequest accountRequest) {
         Optional<Customer> customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
-        SavingsAccountResponse account = new SavingsAccountResponse();
+        LoanAccountResponse account = new LoanAccountResponse();
         if(customer.isEmpty()){
-            account = savingsAccountService.createAccount(accountRequest, false);
+            throw new CustomerNotFoundException("Customer with Aadhar number " + accountRequest.getAadharNumber() + " not found in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
         } else {
             Optional<SavingsAccount> acc = accountRepo.findByCustomerIdAndBank(customer.get().getCustomerId(), accountRequest.getBankName());
         }
@@ -44,12 +43,12 @@ public class LoanAccountService implements AccountService {
     }
 
     @Override
-    public List<SavingsAccountResponse> getAccountsByCustomerInfoFile(String cif) {
+    public List<LoanAccountResponse> getAccountsByCustomerInfoFile(String cif) {
         return List.of();
     }
 
     @Override
-    public SavingsAccountResponse getAccountDetails(String accountNumber) {
+    public LoanAccountResponse getAccountDetails(String accountNumber) {
         return null;
     }
 }

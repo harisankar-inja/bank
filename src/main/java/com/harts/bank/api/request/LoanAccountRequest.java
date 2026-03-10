@@ -3,7 +3,9 @@ package com.harts.bank.api.request;
 import com.harts.bank.enums.AccountType;
 import com.harts.bank.enums.SubAccountType;
 import com.harts.bank.model.Address;
+import lombok.Data;
 
+@Data
 public class LoanAccountRequest {
 
     // for any type of account creation, these details are mandatory
