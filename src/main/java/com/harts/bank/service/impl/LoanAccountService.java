@@ -2,6 +2,8 @@ package com.harts.bank.service.impl;
 
 import com.harts.bank.api.request.LoanAccountRequest;
 import com.harts.bank.api.response.LoanAccountResponse;
+import com.harts.bank.enums.AccountType;
+import com.harts.bank.exceptions.AccountNotFoundException;
 import com.harts.bank.exceptions.CustomerNotFoundException;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
@@ -32,12 +34,22 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
     @Override
     public LoanAccountResponse createAccount(LoanAccountRequest accountRequest) {
         Optional<Customer> customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
-        LoanAccountResponse account = new LoanAccountResponse();
         if(customer.isEmpty()){
-            throw new CustomerNotFoundException("Customer with Aadhar number " + accountRequest.getAadharNumber() + " not found in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
-        } else {
-            Optional<SavingsAccount> acc = accountRepo.findByCustomerIdAndBank(customer.get().getCustomerId(), accountRequest.getBankName());
+            throw new CustomerNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
+                    " not found in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
+        } else if (!customer.get().isActive()){
+            throw new CustomerNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
+                    " is not active in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
         }
+        Optional<SavingsAccount> savingsAccount = accountRepo.findByCustomerIdAndBankAndAccountType(
+                accountRequest.getAadharNumber(), accountRequest.getBankName(), AccountType.SAVINGS);
+        if(savingsAccount.isEmpty()) {
+            throw new AccountNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
+                    " does not have a savings account in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
+        }
+        // create loan account and link the loan account to the savings account
+//        createLoanAccount(accountRequest, customer.get(), savingsAccount);
+        LoanAccountResponse account = new LoanAccountResponse();
 
         return account;
     }

@@ -2,9 +2,8 @@ package com.harts.bank.service.impl;
 
 import com.harts.bank.api.request.SavingsAccountRequest;
 import com.harts.bank.enums.AccountType;
-import com.harts.bank.exceptions.CustomerNotFoundException;
+import com.harts.bank.exceptions.*;
 import com.harts.bank.api.response.SavingsAccountResponse;
-import com.harts.bank.exceptions.InvalidRequestException;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
 import com.harts.bank.repository.SavingsAccountRepo;
@@ -40,12 +39,12 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
         if (customer.isPresent()) {
             if(customer.get().isActive()) {
                 if (checkIfSavingsAccountExists(customer.get().getCustomerId(), accountRequest.getBankName(), accountRequest.getAccountType())) {
-                    throw new CustomerNotFoundException("Customer with Aadhar number " + accountRequest.getAadharNumber() + " already has a savings account with bank " + accountRequest.getBankName());
+                    throw new DuplicateAccountException("Customer with Aadhar number " + accountRequest.getAadharNumber() + " already has a savings account with bank " + accountRequest.getBankName());
                 }
                 setSavingsAccountDetails(savingsAccount, accountRequest, customer.get().getCustomerId());
                 savingsAccount.setAccountHolderName(customer.get().getFirstName() + " " + customer.get().getLastName());
             } else {
-                throw new CustomerNotFoundException("Cif is already present! Customer with Aadhar number " + accountRequest.getAadharNumber()
+                throw new InActiveCifException("Cif is already present! Customer with Aadhar number " + accountRequest.getAadharNumber()
                         + " is not active. Cannot create savings account.");
             }
         } else {
@@ -68,7 +67,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
     public List<SavingsAccountResponse> getAccountsByCustomerInfoFile(String cif) {
         List<SavingsAccount> savingsAccounts = accountRepo.findByCustomerId(cif, LOAN);
         if (savingsAccounts.isEmpty()) {
-            throw new CustomerNotFoundException("No accounts found for customer with CIF " + cif);
+            throw new AccountNotFoundException("No accounts found for customer with CIF " + cif);
         }
         List<SavingsAccountResponse> accounts = new ArrayList<>();
         for(SavingsAccount savingsAccount : savingsAccounts) {
@@ -85,11 +84,11 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
     public SavingsAccountResponse getAccountDetails(String accountNumber) {
         Optional<SavingsAccount> optionalAccount = accountRepo.findByAccountNumber(accountNumber);
         if (optionalAccount.isEmpty()) {
-            throw new CustomerNotFoundException("Account with number " + accountNumber + " not found");
+            throw new AccountNotFoundException("Account with number " + accountNumber + " not found");
         }
         SavingsAccount savingsAccount = optionalAccount.get();
         if (savingsAccount.getAccountType() == LOAN) {
-            throw new CustomerNotFoundException("Account with number " + accountNumber + " is a LOAN account and cannot be retrieved");
+            throw new AccountNotFoundException("Account with number " + accountNumber + " is a LOAN account and cannot be retrieved");
         }
         SavingsAccountResponse account = new SavingsAccountResponse();
         mapSavingsAccountToAccount(account, savingsAccount);
