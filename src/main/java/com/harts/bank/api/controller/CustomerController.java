@@ -1,4 +1,4 @@
-package com.harts.bank.controller;
+package com.harts.bank.api.controller;
 
 import com.harts.bank.model.Address;
 import com.harts.bank.model.Customer;
@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerCustomer(@RequestBody Customer customer) {
+    public ResponseEntity<String> registerCustomer(@Valid @RequestBody Customer customer) {
         customerService.registerCustomer(customer);
         return new ResponseEntity<>("Customer registered successfully", HttpStatus.OK);
     }
