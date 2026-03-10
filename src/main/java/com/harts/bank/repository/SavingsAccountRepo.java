@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Mapper
-public interface AccountRepo {
+public interface SavingsAccountRepo {
     
     @Insert("INSERT INTO account_t (acc_nbr, cif, acc_holder_nm, bank_nm, brnch_nm, ifsc_cd, acc_type, balance, " +
             "is_active, crt_at, crt_by, updt_at, updt_by) VALUES (#{accountNumber}, #{cif}, #{accountHolderName}, #{bankName}, " +
