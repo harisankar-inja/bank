@@ -4,7 +4,7 @@ import com.harts.bank.api.request.SavingsAccountRequest;
 import com.harts.bank.api.response.SavingsAccountResponse;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.SavingsAccount;
-import com.harts.bank.repository.AccountRepo;
+import com.harts.bank.repository.SavingsAccountRepo;
 import com.harts.bank.repository.CustomerRepo;
 import com.harts.bank.service.AccountService;
 import com.harts.bank.service.CustomerService;
@@ -19,7 +19,7 @@ public class LoanAccountService implements AccountService {
 
     private final CustomerRepo customerRepo;
     private final CustomerService customerService;
-    private final AccountRepo accountRepo;
+    private final SavingsAccountRepo accountRepo;
     private final SavingsAccountService savingsAccountService;
 
     /***
