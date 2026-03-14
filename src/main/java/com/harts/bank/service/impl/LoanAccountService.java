@@ -57,7 +57,8 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
                     " does not have a savings account in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
         }
         // Validate loan eligibility
-        LoanEligibilityResponse eligibility = loanEligibilityService.validateLoanAccountRequest(accountRequest, customer.get(), savingsAccount.get());
+        List<LoanAccount> loanAccounts = loanAccountRepo.getLoanAccountsByPanNum(customer.get().getPanNumber());
+        LoanEligibilityResponse eligibility = loanEligibilityService.validateLoanAccountRequest(accountRequest, customer.get(), savingsAccount.get(), loanAccounts);
         if (!eligibility.isEligible()) {
             throw new LoanNotEligibleException("Loan not eligible: " + eligibility.getMessage() + ". Eligible amount: " + eligibility.getEligibleAmount());
         }
@@ -80,6 +81,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
     private void setLoanAccountModel(LoanAccount account, LoanAccountRequest accountRequest, Customer customer,
                                      String loanAccountNum, String savingsAccNum, double eligibleAmount) {
         account.setCif(customer.getCustomerId());
+        account.setPanNumber(accountRequest.getPanNumber());
         account.setAccountHolderName(customer.getFirstName() + " " + customer.getLastName());
         account.setLoanAccountNumber(loanAccountNum); // Generate unique account number
         account.setLinkedSavingsAccountNumber(savingsAccNum);
@@ -87,6 +89,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         account.setSubAccountType(accountRequest.getSubAccountType());
         account.setLoanAmount(eligibleAmount);
         account.setEmiAmount(calculateEmi(eligibleAmount, accountRequest.getInterestRate(), accountRequest.getLoanTermInYears()));
+        account.setPendingEmis(calulatePendingEmis(accountRequest.getLoanTermInYears()));
         account.setEmiDueDate(calculateEmiDueDate(LocalDate.now()));
         account.setInterestRate(accountRequest.getInterestRate());
         account.setLoanTermInYears(accountRequest.getLoanTermInYears());
@@ -99,6 +102,10 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         account.setLoanEndDate(calculateLoanEndDate(account.getLoanStartDate(), account.getLoanTermInYears()));
         account.setCreatedBy(accountRequest.getCreatedBy()==null? "SYSTEM" : accountRequest.getCreatedBy());
         account.setUpdatedBy(accountRequest.getUpdatedBy()==null? account.getCreatedBy() : accountRequest.getUpdatedBy());
+    }
+
+    private int calulatePendingEmis(int loanTermInYears) {
+        return loanTermInYears * 12; // Assuming monthly EMIs, so total EMIs = loan term in years * 12
     }
 
     private double calculateEmi(double eligibleAmount, double interestRate, int loanTermInYears) {
