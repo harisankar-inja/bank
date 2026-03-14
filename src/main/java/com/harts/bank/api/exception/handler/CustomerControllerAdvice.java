@@ -99,4 +99,15 @@ public class CustomerControllerAdvice {
         response.put(EXCEPTION, ex.getClass().getSimpleName());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(LoanNotEligibleException.class)
+    public ResponseEntity<Map<String, Object>> handleLoanNotEligibleException(LoanNotEligibleException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put(STATUS, HttpStatus.BAD_REQUEST.value());
+        response.put(ERROR, "Illegal Argument");
+        response.put(MESSAGE, ex.getMessage());
+        response.put(TIMESTAMP, java.time.Instant.now());
+        response.put(EXCEPTION, ex.getClass().getSimpleName());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }
