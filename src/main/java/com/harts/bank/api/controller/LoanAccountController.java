@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class LoanAccountController {
     
-    private LoanAccountService loanAccountService;
+    private final LoanAccountService loanAccountService;
 
     @PostMapping("/loan")
     public ResponseEntity<?> createLoanAccount(@Valid @RequestBody LoanAccountRequest accountRequest) {

@@ -1,39 +1,38 @@
 package com.harts.bank.api.request;
 
 import com.harts.bank.enums.AccountType;
+import com.harts.bank.enums.EmploymentType;
 import com.harts.bank.enums.SubAccountType;
-import com.harts.bank.model.Address;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.NonNull;
 
 @Data
 public class LoanAccountRequest {
 
-    // for any type of account creation, these details are mandatory
+    @NonNull
     private AccountType accountType;
+    @NotBlank
     private String aadharNumber;
+    @NotBlank
     private String panNumber;
+    @NotBlank
     private String bankName;
+    @NotBlank
     private String bankBranch;
+    @NotBlank
     private String ifscCode;
-
-    // for customers opening savings account
-    private double initialDeposit;
-
-    // for customers opening loan account
+    @NonNull
     private SubAccountType subAccountType;
-    private double loanAmount;
+    private double loanAmountRequested;
     private int loanTermInYears;
     private double interestRate;
     private int creditScore;
-    private int annualIncome;
+    private double monthlyIncome;
+    private double annualIncome;
     private int existingEmis;
-    private String employmentType; // salaried, self-employed, unemployed
-
-    // customer details for new customers
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phoneNumber;
-    private String adhaarNumber;
-    private Address address;
+    @NonNull
+    private EmploymentType employmentType; // salaried, self-employed, unemployed
+    private String createdBy;
+    private String updatedBy;
 }
