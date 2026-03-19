@@ -10,7 +10,7 @@ import java.util.Optional;
 @Mapper
 public interface SavingsAccountRepo {
     
-    @Insert("INSERT INTO account_t (acc_nbr, cif, acc_holder_nm, bank_nm, brnch_nm, ifsc_cd, acc_type, balance, " +
+    @Insert("INSERT INTO account_t (acc_nbr, cif, acc_holder_nm, bank_nm, brnch_nm, ifsc_cd, acc_typ, balance, " +
             "is_active, crt_at, crt_by, updt_at, updt_by) VALUES (#{accountNumber}, #{cif}, #{accountHolderName}, #{bankName}, " +
             "#{branchName}, #{ifscCode}, #{accountType}, #{balance}, true, NOW(), #{createdBy}, NOW(), #{updatedBy})")
     int persist(SavingsAccount account);
@@ -23,7 +23,7 @@ public interface SavingsAccountRepo {
         @Result(property = "bankName", column = "bank_nm"),
         @Result(property = "branchName", column = "brnch_nm"),
         @Result(property = "ifscCode", column = "ifsc_cd"),
-        @Result(property = "accountType", column = "acc_type"),
+        @Result(property = "accountType", column = "acc_typ"),
         @Result(property = "balance", column = "balance"),
         @Result(property = "active", column = "is_active"),
         @Result(property = "createdAt", column = "crt_at"),
@@ -35,7 +35,7 @@ public interface SavingsAccountRepo {
     Optional<SavingsAccount> findByAccountNumber(String accountNumber);
 
     @ResultMap("accountResultMap")
-    @Select("SELECT * FROM account_t WHERE cif = #{cif} and acc_type != #{loan}")
+    @Select("SELECT * FROM account_t WHERE cif = #{cif} and acc_typ != #{loan}")
     List<SavingsAccount> findByCustomerId(String cif, AccountType loan);
 
     @ResultMap("accountResultMap")
@@ -43,6 +43,6 @@ public interface SavingsAccountRepo {
     Optional<SavingsAccount> findByCustomerIdAndBank(String customerId, String bankName);
 
     @ResultMap("accountResultMap")
-    @Select("SELECT * FROM account_t WHERE cif = #{customerId} and bank_nm = #{bankName} and acc_type = #{accountType}")
+    @Select("SELECT * FROM account_t WHERE cif = #{customerId} and bank_nm = #{bankName} and acc_typ = #{accountType}")
     Optional<SavingsAccount> findByCustomerIdAndBankAndAccountType(String customerId, String bankName, AccountType accountType);
 }
