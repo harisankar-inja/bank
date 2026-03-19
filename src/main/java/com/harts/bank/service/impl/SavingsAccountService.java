@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.harts.bank.enums.AccountType.LOAN;
+import static com.harts.bank.enums.AccountType.SAVINGS;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
 
     private final CustomerRepo customerRepo;
     private final CustomerService customerService;
-    private final SavingsAccountRepo accountRepo;
+    private final SavingsAccountRepo savingsAccountRepo;
 
     @Override
     @Transactional
@@ -56,7 +57,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
             setSavingsAccountDetails(savingsAccount, accountRequest, newCustomer.getCustomerId());
             savingsAccount.setAccountHolderName(accountRequest.getFirstName() + " " + accountRequest.getLastName());
         }
-        accountRepo.persist(savingsAccount);
+        savingsAccountRepo.persist(savingsAccount);
         SavingsAccountResponse account = new SavingsAccountResponse();
         mapSavingsAccountToAccount(account, savingsAccount);
         return account;
@@ -64,7 +65,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
 
     @Override
     public List<SavingsAccountResponse> getAccountsByCustomerInfoFile(String cif) {
-        List<SavingsAccount> savingsAccounts = accountRepo.findByCustomerId(cif, LOAN);
+        List<SavingsAccount> savingsAccounts = savingsAccountRepo.findByCustomerId(cif, SAVINGS);
         if (savingsAccounts.isEmpty()) {
             throw new AccountNotFoundException("No accounts found for customer with CIF " + cif);
         }
@@ -81,7 +82,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
 
     @Override
     public SavingsAccountResponse getAccountDetails(String accountNumber) {
-        Optional<SavingsAccount> optionalAccount = accountRepo.findByAccountNumber(accountNumber);
+        Optional<SavingsAccount> optionalAccount = savingsAccountRepo.findByAccountNumber(accountNumber);
         if (optionalAccount.isEmpty()) {
             throw new AccountNotFoundException("Account with number " + accountNumber + " not found");
         }
@@ -107,7 +108,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
     }
 
     private boolean checkIfSavingsAccountExists(String customerId, String bankName, AccountType accountType) {
-        Optional<SavingsAccount> optionalAccount = accountRepo.findByCustomerIdAndBankAndAccountType(customerId, bankName, accountType);
+        Optional<SavingsAccount> optionalAccount = savingsAccountRepo.findByCustomerIdAndBankAndAccountType(customerId, bankName, accountType);
         return optionalAccount.isPresent();
     }
 
@@ -146,5 +147,13 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
         account.setAccountType(savingsAccount.getAccountType());
         account.setBalance(savingsAccount.getBalance());
         account.setActive(savingsAccount.isActive());
+    }
+
+    public List<SavingsAccount> findAllAccounts(String bankName) {
+        List<SavingsAccount> accounts = savingsAccountRepo.findAllAccounts(bankName, AccountType.SAVINGS);
+        if (accounts.isEmpty()) {
+            throw new AccountNotFoundException("No accounts found for bank " + bankName);
+        }
+        return accounts;
     }
 }

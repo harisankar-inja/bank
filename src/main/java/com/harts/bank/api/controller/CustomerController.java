@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/customers")
 @RequiredArgsConstructor
 public class CustomerController {
 
@@ -72,5 +72,11 @@ public class CustomerController {
     public ResponseEntity<String> activateCustomer(@PathVariable String customerId) {
         customerService.activateCustomer(customerId);
         return new ResponseEntity<>("Customer activated successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/deactivate/{customerId}")
+    public ResponseEntity<String> deactivateCustomer(@PathVariable String customerId) {
+        customerService.deactivateCustomer(customerId);
+        return new ResponseEntity<>("Customer deactivated successfully", HttpStatus.OK);
     }
 }

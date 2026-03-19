@@ -4,6 +4,7 @@ import com.harts.bank.api.request.dto.BankDetails;
 import com.harts.bank.api.request.dto.ContactInfo;
 import com.harts.bank.api.request.dto.PersonalInfo;
 import com.harts.bank.api.response.CustomerDetailsResponse;
+import com.harts.bank.api.response.CustomerResponse;
 import com.harts.bank.model.CustomerDetails;
 import com.harts.bank.repository.AccountDetailsRepo;
 import lombok.RequiredArgsConstructor;

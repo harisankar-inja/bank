@@ -1,10 +1,13 @@
 package com.harts.bank.repository;
 
+import com.harts.bank.api.response.LoanAccountResponse;
+import com.harts.bank.enums.AccountType;
 import com.harts.bank.model.LoanAccount;
 import jakarta.validation.constraints.NotBlank;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface LoanAccountRepo {
@@ -38,4 +41,16 @@ public interface LoanAccountRepo {
     })
     @Select("SELECT * FROM loan_account_t WHERE pan_nbr = #{panNumber} AND is_active = true")
     List<LoanAccount> getLoanAccountsByPanNum(@NotBlank String panNumber);
+    //TODO: change return type to LoanAccountResponse everywhere
+    @ResultMap("loanAccountResultMap")
+    @Select("SELECT * FROM loan_account_t WHERE bank_nm = #{bankName} AND is_active = true")
+    List<LoanAccount> findAllAccounts(String bankName);
+
+    @ResultMap("loanAccountResultMap")
+    @Select("SELECT * FROM loan_account_t WHERE cif = #{cif} AND is_active = true")
+    List<LoanAccountResponse> getAccountsByCID(String cif);
+
+    @ResultMap("loanAccountResultMap")
+    @Select("SELECT * FROM loan_account_t WHERE ln_acc_nbr = #{accountNumber} AND is_active = true")
+    Optional<LoanAccountResponse> findByAccountNumber(String accountNumber);
 }

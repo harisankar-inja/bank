@@ -9,7 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/loan-account")
+@RequestMapping("/loan-accounts")
+//TODO: add bank name in the url as path variable and validate that the bank name in the request body matches the bank name in the url, also add loan type in the url as path variable and validate that the loan type in the request body matches the loan type in the url
 @RequiredArgsConstructor
 public class LoanAccountController {
     
@@ -36,25 +37,26 @@ public class LoanAccountController {
                 loanAccountService.getAccountDetails(accountNumber),
                 HttpStatus.OK);
     }
-    //TODO
-//    @GetMapping("/all")
-//    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
-//        return new ResponseEntity<>(
-//                loanAccountService.findAllAccounts(bankName),
-//                HttpStatus.OK);
-//    }
-//
-//    @GetMapping("/eligibility")
-//    public ResponseEntity<?> checkLoanEligibility(@Valid @RequestBody LoanAccountRequest accountRequest) {
-//        return new ResponseEntity<>(
-//                loanAccountService.checkLoanEligibility(accountRequest),
-//                HttpStatus.OK);
-//    }
 
-//    @GetMapping("/loan-accounts/pan/{panNumber}")
-//    public ResponseEntity<?> getLoanAccountsByPanNumber(@PathVariable String panNumber) {
-//        return new ResponseEntity<>(
-//                accountDetailsService.getLoanAccountsByPanNumber(panNumber),
-//                HttpStatus.OK);
-//    }
+    @GetMapping("/all")
+    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
+        return new ResponseEntity<>(
+                loanAccountService.findAllAccounts(bankName),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/all/loan-type")
+    public ResponseEntity<?> findAllAccountsByLoanType(@RequestParam String bankName,
+                                                       @RequestParam String loanType) {
+        return new ResponseEntity<>(
+                loanAccountService.findAllAccountsByLoanType(bankName, loanType),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/eligibility")
+    public ResponseEntity<?> checkLoanEligibility(@Valid @RequestBody LoanAccountRequest accountRequest) {
+        return new ResponseEntity<>(
+                loanAccountService.checkLoanEligibility(accountRequest),
+                HttpStatus.OK);
+    }
 }
