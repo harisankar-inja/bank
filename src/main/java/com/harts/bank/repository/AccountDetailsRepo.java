@@ -29,7 +29,7 @@ public interface AccountDetailsRepo {
             "WHERE c.adhr_no = #{aadharNumber}")
     List<CustomerDetails> getAccountsByAadharNumber(String aadharNumber);
 
-    @Select("SELECT acc_nbr AS accountNumber, acc_type AS accountType, NULL AS loanType FROM account_t WHERE cif = #{cif}")
+    @Select("SELECT acc_nbr AS accountNumber, acc_typ AS accountType, NULL AS loanType FROM account_t WHERE cif = #{cif}")
     List<Account> getAllAccountsByCif(String cif);
 
     @Select("SELECT ln_acc_nbr AS accountNumber, acc_typ AS accountType, ln_typ AS loanType FROM loan_account_t WHERE cif = #{cif}")

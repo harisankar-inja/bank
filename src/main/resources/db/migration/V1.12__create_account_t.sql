@@ -6,7 +6,7 @@ create table account_t(
     bank_nm varchar(50) not null,
     brnch_nm varchar(50) not null,
     ifsc_cd varchar(20) not null,
-    acc_type varchar(20) not null,
+    acc_typ varchar(20) not null,
     balance decimal(15,2),
     is_active boolean,
     crt_at timestamp,
