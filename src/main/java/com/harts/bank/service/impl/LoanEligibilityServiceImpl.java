@@ -32,7 +32,7 @@ public class LoanEligibilityServiceImpl implements LoanEligibilityService {
 
         double totalMontlyEmis = findTotalMonthlyEmi(loanAccounts);
         double requestedAmount = request.getLoanAmountRequested();
-        loanType = request.getSubAccountType().name();
+        loanType = request.getLoanType().name();
         exixtingEmis = loanAccounts.size();
 
         if (creditScore < 650) {

@@ -23,7 +23,7 @@ public class LoanAccountRequest {
     @NotBlank
     private String ifscCode;
     @NonNull
-    private LoanType subAccountType;
+    private LoanType loanType;
     private boolean requestedLoanAmountAutoCal; // if true, use loanAmountRequested, else auto-calculate based on credit score and income
     private double loanAmountRequested;
     private boolean interestRateAndTermAutoCal; // for auto-calculation based on credit score and income, if false, use provided values

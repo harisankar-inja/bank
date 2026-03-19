@@ -16,7 +16,7 @@ public class LoanAccountResponse {
     private String branchName;
     private String ifscCode;
     private AccountType accountType;
-    private LoanType subAccountType;
+    private LoanType loanType;
     private double loanAmount;
     private boolean active;
 

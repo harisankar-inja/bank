@@ -5,7 +5,7 @@ create table loan_account_t (
     ln_acc_nbr varchar(20) unique not null,
     ln_acc_holder_nm varchar(100) not null,
     acc_typ varchar(20) not null,
-    sub_acc_typ varchar(20) not null,
+    ln_typ varchar(20) not null,
     ln_amt decimal(15,2) not null,
     emi_amt decimal(15,2) not null,
     pend_emis int not null,

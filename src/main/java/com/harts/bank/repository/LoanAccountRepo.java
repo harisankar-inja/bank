@@ -9,8 +9,8 @@ import java.util.List;
 @Mapper
 public interface LoanAccountRepo {
 
-    @Insert("INSERT INTO loan_account_t (cif, pan_nbr, ln_acc_nbr, ln_acc_holder_nm, acc_typ, sub_acc_typ, ln_amt, emi_amt, pend_emis, emi_due_dt, ln_trm_yrs, int_rate, crdt_score, ann_inc, exist_emis, emp_typ, is_active, ln_strt_dt, ln_end_dt, crt_at, updt_at, crt_by, updt_by) " +
-            "VALUES (#{cif}, #{panNumber}, #{loanAccountNumber}, #{accountHolderName}, #{accountType}, #{subAccountType}, #{loanAmount}, #{emiAmount}, #{pendingEmis}, #{emiDueDate}, #{loanTermInYears}, #{interestRate}, #{creditScore}, #{annualIncome}, #{existingEmis}, #{employmentType}, #{active}, #{loanStartDate}, #{loanEndDate}, NOW(), NOW(), #{createdBy}, #{updatedBy})")
+    @Insert("INSERT INTO loan_account_t (cif, pan_nbr, ln_acc_nbr, ln_acc_holder_nm, acc_typ, ln_typ, ln_amt, emi_amt, pend_emis, emi_due_dt, ln_trm_yrs, int_rate, crdt_score, ann_inc, exist_emis, emp_typ, is_active, ln_strt_dt, ln_end_dt, crt_at, updt_at, crt_by, updt_by) " +
+            "VALUES (#{cif}, #{panNumber}, #{loanAccountNumber}, #{accountHolderName}, #{accountType}, #{loanType}, #{loanAmount}, #{emiAmount}, #{pendingEmis}, #{emiDueDate}, #{loanTermInYears}, #{interestRate}, #{creditScore}, #{annualIncome}, #{existingEmis}, #{employmentType}, #{active}, #{loanStartDate}, #{loanEndDate}, NOW(), NOW(), #{createdBy}, #{updatedBy})")
     int persist(LoanAccount account);
 
 
@@ -21,7 +21,7 @@ public interface LoanAccountRepo {
             @Result(property = "loanAccountNumber", column = "ln_acc_nbr"),
             @Result(property = "linkedSavingsAccountNumber", column = "linked_savings_acc_nbr"),
             @Result(property = "accountType", column = "acc_typ"),
-            @Result(property = "subAccountType", column = "sub_acc_typ"),
+            @Result(property = "loanType", column = "ln_typ"),
             @Result(property = "loanAmount", column = "ln_amt"),
             @Result(property = "emiAmount", column = "emi_amt"),
             @Result(property = "pendingEmis", column = "pend_emis"),

@@ -16,7 +16,7 @@ public class LoanAccount {
     private String loanAccountNumber;
     private String linkedSavingsAccountNumber; // for EMI deductions
     private AccountType accountType; // should be LOAN
-    private LoanType subAccountType; // HOME_LOAN, PERSONAL_LOAN, AUTO_LOAN, EDUCATION_LOAN
+    private LoanType loanType; // HOME_LOAN, PERSONAL_LOAN, AUTO_LOAN, EDUCATION_LOAN
     private double loanAmount;
     private double emiAmount;
     private int pendingEmis; // to track how many EMIs are pending for the loan
