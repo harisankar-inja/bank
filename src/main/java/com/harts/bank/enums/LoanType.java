@@ -1,6 +1,6 @@
 package com.harts.bank.enums;
 
-public enum SubAccountType {
+public enum LoanType {
 
     GOLD_LOAN("Gold Loan"),
     PERSONAL_LOAN("Personal Loan"),
@@ -11,7 +11,7 @@ public enum SubAccountType {
 
     private final String displayName;
 
-    SubAccountType(String displayName) {
+    LoanType(String displayName) {
         this.displayName = displayName;
     }
 

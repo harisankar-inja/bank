@@ -2,7 +2,7 @@ package com.harts.bank.api.request;
 
 import com.harts.bank.enums.AccountType;
 import com.harts.bank.enums.EmploymentType;
-import com.harts.bank.enums.SubAccountType;
+import com.harts.bank.enums.LoanType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NonNull;
@@ -23,14 +23,15 @@ public class LoanAccountRequest {
     @NotBlank
     private String ifscCode;
     @NonNull
-    private SubAccountType subAccountType;
+    private LoanType subAccountType;
+    private boolean requestedLoanAmountAutoCal; // if true, use loanAmountRequested, else auto-calculate based on credit score and income
     private double loanAmountRequested;
-    private int loanTermInYears;
-    private double interestRate;
+    private boolean interestRateAndTermAutoCal; // for auto-calculation based on credit score and income, if false, use provided values
+    private int loanTermInYears;    //to override auto-calculated term if needed
+    private double interestRate;    //to override auto-calculated interest rate if needed
     private int creditScore;
     private double monthlyIncome;
     private double annualIncome;
-    private int existingEmis;
     @NonNull
     private EmploymentType employmentType; // salaried, self-employed, unemployed
     private String createdBy;

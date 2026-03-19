@@ -1,7 +1,6 @@
 package com.harts.bank.api.response;
 
 import com.harts.bank.enums.AccountType;
-import com.harts.bank.enums.SubAccountType;
 import lombok.Data;
 
 @Data

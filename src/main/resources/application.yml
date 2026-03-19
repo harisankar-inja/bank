@@ -16,5 +16,8 @@ spring:
 #    user: admin
 #    password: admin
 #
+  config:
+    import: classpath:bank-config.yml
+
 mybatis:
   type-handlers-package: com.harts.bank.typehandlers
