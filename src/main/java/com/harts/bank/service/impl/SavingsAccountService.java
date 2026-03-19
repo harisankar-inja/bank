@@ -12,7 +12,6 @@ import com.harts.bank.service.AccountService;
 import com.harts.bank.service.CustomerService;
 import com.harts.bank.utils.CommonUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

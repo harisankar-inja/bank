@@ -50,4 +50,11 @@ public class LoanAccountController {
 //                loanAccountService.checkLoanEligibility(accountRequest),
 //                HttpStatus.OK);
 //    }
+
+//    @GetMapping("/loan-accounts/pan/{panNumber}")
+//    public ResponseEntity<?> getLoanAccountsByPanNumber(@PathVariable String panNumber) {
+//        return new ResponseEntity<>(
+//                accountDetailsService.getLoanAccountsByPanNumber(panNumber),
+//                HttpStatus.OK);
+//    }
 }

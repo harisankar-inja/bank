@@ -16,7 +16,6 @@ import com.harts.bank.repository.LoanAccountRepo;
 import com.harts.bank.repository.SavingsAccountRepo;
 import com.harts.bank.repository.CustomerRepo;
 import com.harts.bank.service.AccountService;
-import com.harts.bank.service.CustomerService;
 import com.harts.bank.service.LoanEligibilityService;
 import com.harts.bank.utils.CommonUtils;
 import jakarta.validation.constraints.NotBlank;
@@ -95,10 +94,10 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         LoanAccount account = new LoanAccount();
         if(accountRequest.isInterestRateAndTermAutoCal()) {
             Optional<LoanEligibilityConfig.Loan> loan = loanEligibilityConfig.getLoans().stream()
-                    .filter(l -> l.getLoanType().equalsIgnoreCase(accountRequest.getSubAccountType().name()))
+                    .filter(l -> l.getLoanType().equalsIgnoreCase(accountRequest.getLoanType().name()))
                     .findFirst();
             if (loan.isEmpty()) {
-                throw new InvalidRequestException("No loan eligibility configuration found for loan type: " + accountRequest.getSubAccountType().name());
+                throw new InvalidRequestException("No loan eligibility configuration found for loan type: " + accountRequest.getLoanType().name());
             }
             accountRequest.setInterestRate(findLoanInterestRate(accountRequest, loan.get()));
             accountRequest.setLoanTermInYears(findLoanTerm(accountRequest, loan.get()));
@@ -129,7 +128,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         account.setLoanAccountNumber(loanAccountNum); // Generate unique account number
         account.setLinkedSavingsAccountNumber(savingsAccNum);
         account.setAccountType(AccountType.LOAN);
-        account.setSubAccountType(accountRequest.getSubAccountType()); //TODO: change name to loanType in request and model
+        account.setLoanType(accountRequest.getLoanType());
         account.setLoanAmount(eligibleAmount);
         account.setEmiAmount(calculateEmi(eligibleAmount, accountRequest.getInterestRate(), accountRequest.getLoanTermInYears()));
         account.setPendingEmis(calculatePendingEmis(accountRequest.getLoanTermInYears()));
@@ -186,7 +185,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         accountResponse.setBranchName(accountRequest.getBankBranch());
         accountResponse.setIfscCode(accountRequest.getIfscCode());
         accountResponse.setAccountType(AccountType.LOAN);
-        accountResponse.setSubAccountType(accountRequest.getSubAccountType());
+        accountResponse.setLoanType(accountRequest.getLoanType());
         accountResponse.setLoanAmount(accountRequest.getLoanAmountRequested());
         accountResponse.setInterestRate(accountRequest.getInterestRate());
         accountResponse.setLoanTermInYears(accountRequest.getLoanTermInYears());

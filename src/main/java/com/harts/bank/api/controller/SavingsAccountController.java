@@ -36,4 +36,11 @@ public class SavingsAccountController {
                 savingsAccountService.getAccountDetails(accountNumber),
                 HttpStatus.OK);
     }
+
+//    @GetMapping("/all")
+//    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
+//        return new ResponseEntity<>(
+//                accountDetailsService.findAllAccounts(bankName),
+//                HttpStatus.OK);
+//    }
 }
