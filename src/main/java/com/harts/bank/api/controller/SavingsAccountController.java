@@ -37,10 +37,10 @@ public class SavingsAccountController {
                 HttpStatus.OK);
     }
 
-//    @GetMapping("/all")
-//    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
-//        return new ResponseEntity<>(
-//                accountDetailsService.findAllAccounts(bankName),
-//                HttpStatus.OK);
-//    }
+    @GetMapping("/all")
+    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
+        return new ResponseEntity<>(
+                savingsAccountService.findAllAccounts(bankName),
+                HttpStatus.OK);
+    }
 }

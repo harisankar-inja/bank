@@ -18,6 +18,7 @@ import com.harts.bank.repository.CustomerRepo;
 import com.harts.bank.service.AccountService;
 import com.harts.bank.service.LoanEligibilityService;
 import com.harts.bank.utils.CommonUtils;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ import static com.harts.bank.utils.CommonUtils.calculateMidCreditScore;
 public class LoanAccountService implements AccountService<LoanAccountRequest, LoanAccountResponse> {
 
     private final CustomerRepo customerRepo;
-    private final SavingsAccountRepo accountRepo;
+    private final SavingsAccountRepo savingsAccountRepo;
     private final LoanEligibilityService loanEligibilityService;
     private final LoanAccountRepo loanAccountRepo;
 
@@ -61,7 +62,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
             throw new CustomerNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
                     " is not active in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
         }
-        Optional<SavingsAccount> savingsAccount = accountRepo.findByCustomerIdAndBankAndAccountType(
+        Optional<SavingsAccount> savingsAccount = savingsAccountRepo.findByCustomerIdAndBankAndAccountType(
                 customer.get().getCustomerId(), accountRequest.getBankName(), AccountType.SAVINGS);
         if(savingsAccount.isEmpty()) {
             throw new AccountNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
@@ -194,11 +195,50 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
 
     @Override
     public List<LoanAccountResponse> getAccountsByCustomerInfoFile(String cif) {
-        return List.of();
+        List<LoanAccountResponse> loanAccountResponses = loanAccountRepo.getAccountsByCID(cif);
+        if (loanAccountResponses.isEmpty()) {
+            throw new AccountNotFoundException("No loan accounts found for customer with CIF " + cif);
+        }
+        return loanAccountResponses;
     }
 
     @Override
     public LoanAccountResponse getAccountDetails(String accountNumber) {
+//        Optional<LoanAccountResponse> loanAccountResponse = loanAccountRepo.findByAccountNumber(accountNumber);
+//        if(loanAccountResponse.isEmpty()) {
+//            throw new AccountNotFoundException("Loan account with account number " + accountNumber + " not found.");
+//        }
+//        return loanAccountResponse.get();
         return null;
+    }
+
+    public List<LoanAccount> findAllAccounts(String bankName) {
+        return loanAccountRepo.findAllAccounts(bankName);
+    }
+
+
+    public List<LoanAccount> findAllAccountsByLoanType(String bankName, String loanType) {
+        return loanAccountRepo.findAllAccounts(bankName).stream()
+                .filter(a -> a.getLoanType().name().equalsIgnoreCase(loanType))
+                .toList();
+    }
+
+    public LoanEligibilityResponse checkLoanEligibility(@Valid LoanAccountRequest accountRequest) {
+        Optional<Customer> customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
+        if(customer.isEmpty()){
+            throw new CustomerNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
+                    " not found in bank " + accountRequest.getBankName() + ". Cannot check loan eligibility.");
+        } else if (!customer.get().isActive()){
+            throw new CustomerNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
+                    " is not active in bank " + accountRequest.getBankName() + ". Cannot check loan eligibility.");
+        }
+        Optional<SavingsAccount> savingsAccount = savingsAccountRepo.findByCustomerIdAndBankAndAccountType(
+                customer.get().getCustomerId(), accountRequest.getBankName(), AccountType.SAVINGS);
+        if(savingsAccount.isEmpty()) {
+            throw new AccountNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
+                    " does not have a savings account in bank " + accountRequest.getBankName() + ". Cannot check loan eligibility.");
+        }
+        List<LoanAccount> loanAccounts = loanAccountRepo.getLoanAccountsByPanNum(customer.get().getPanNumber());
+        return loanEligibilityService.validateLoanAccountRequest(accountRequest, customer.get(), savingsAccount.get(), loanAccounts);
     }
 }

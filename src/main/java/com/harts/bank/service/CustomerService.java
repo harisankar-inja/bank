@@ -5,6 +5,7 @@ import com.harts.bank.exceptions.UniqueConstraintException;
 import com.harts.bank.model.Address;
 import com.harts.bank.model.Customer;
 import com.harts.bank.repository.CustomerRepo;
+import com.harts.bank.utils.CommonUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class CustomerService {
 
     public void registerCustomer(Customer customer, boolean checkForExistingCustomer) {
         if(checkForExistingCustomer) {
-            Optional<Customer> cust = customerRepo.findByCif(customer.getCustomerId());
+            Optional<Customer> cust = customerRepo.findByAdhaarNum(customer.getAdhaarNumber());
             if (cust.isPresent()) {
                 throw new UniqueConstraintException("Customer with ID " + customer.getCustomerId() + " already exists");
             }
@@ -29,6 +30,7 @@ public class CustomerService {
         customer.setUpdatedAt(LocalDateTime.now());
         customer.setCreatedBy(customer.getCreatedBy() == null ? "system" : customer.getCreatedBy());
         customer.setUpdatedBy(customer.getUpdatedBy() == null ? "system" : customer.getUpdatedBy());
+        customer.setCustomerId("CIF" + CommonUtils.generateRandomNumber(6));
         customerRepo.persist(customer);
     }
 
@@ -124,6 +126,19 @@ public class CustomerService {
         if (customerOpt.isPresent()) {
             Customer customer = customerOpt.get();
             customer.setActive(true);
+            customer.setUpdatedAt(LocalDateTime.now());
+            customer.setUpdatedBy("system");
+            customerRepo.update(customer);
+        } else {
+            throw new CustomerNotFoundException("Customer with ID " + customerId + " not found");
+        }
+    }
+
+    public void deactivateCustomer(String customerId) {
+        Optional<Customer> customerOpt = customerRepo.findByCif(customerId);
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            customer.setActive(false);
             customer.setUpdatedAt(LocalDateTime.now());
             customer.setUpdatedBy("system");
             customerRepo.update(customer);

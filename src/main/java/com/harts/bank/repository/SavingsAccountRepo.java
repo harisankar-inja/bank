@@ -45,4 +45,7 @@ public interface SavingsAccountRepo {
     @ResultMap("accountResultMap")
     @Select("SELECT * FROM account_t WHERE cif = #{customerId} and bank_nm = #{bankName} and acc_typ = #{accountType}")
     Optional<SavingsAccount> findByCustomerIdAndBankAndAccountType(String customerId, String bankName, AccountType accountType);
+
+    @Select("SELECT * FROM account_t WHERE bank_nm = #{bankName} and acc_typ = #{accountType}")
+    List<SavingsAccount> findAllAccounts(String bankName, AccountType accountType);
 }

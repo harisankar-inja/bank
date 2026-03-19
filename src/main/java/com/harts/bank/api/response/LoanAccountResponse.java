@@ -1,10 +1,12 @@
 package com.harts.bank.api.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.harts.bank.enums.AccountType;
 import com.harts.bank.enums.LoanType;
 import lombok.Data;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoanAccountResponse {
 
 
