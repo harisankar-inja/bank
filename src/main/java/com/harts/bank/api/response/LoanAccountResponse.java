@@ -1,7 +1,7 @@
 package com.harts.bank.api.response;
 
 import com.harts.bank.enums.AccountType;
-import com.harts.bank.enums.SubAccountType;
+import com.harts.bank.enums.LoanType;
 import lombok.Data;
 
 @Data
@@ -16,7 +16,7 @@ public class LoanAccountResponse {
     private String branchName;
     private String ifscCode;
     private AccountType accountType;
-    private SubAccountType subAccountType;
+    private LoanType subAccountType;
     private double loanAmount;
     private boolean active;
 

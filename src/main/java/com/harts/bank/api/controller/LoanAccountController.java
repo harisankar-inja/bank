@@ -17,6 +17,7 @@ public class LoanAccountController {
 
     @PostMapping("/loan")
     public ResponseEntity<?> createLoanAccount(@Valid @RequestBody LoanAccountRequest accountRequest) {
+        // TODO: validate bank details are correct, bank name, ifsc code should be valid and matching, also validate that the customer is eligible for the loan account based on the request details and existing accounts and loans
         return new ResponseEntity<>(
                 loanAccountService.createAccount(accountRequest),
                 HttpStatus.OK);
@@ -35,4 +36,18 @@ public class LoanAccountController {
                 loanAccountService.getAccountDetails(accountNumber),
                 HttpStatus.OK);
     }
+    //TODO
+//    @GetMapping("/all")
+//    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
+//        return new ResponseEntity<>(
+//                loanAccountService.findAllAccounts(bankName),
+//                HttpStatus.OK);
+//    }
+//
+//    @GetMapping("/eligibility")
+//    public ResponseEntity<?> checkLoanEligibility(@Valid @RequestBody LoanAccountRequest accountRequest) {
+//        return new ResponseEntity<>(
+//                loanAccountService.checkLoanEligibility(accountRequest),
+//                HttpStatus.OK);
+//    }
 }

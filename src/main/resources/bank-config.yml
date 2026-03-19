@@ -1,0 +1,74 @@
+loan-eligibility:
+  loans:
+    - loanType: HOME_LOAN
+      minCibilScore: 700
+      maxCibilScore: 900
+      minIncome: 30000
+      maxIncome: 1000000
+      minInterestRate: 7.5
+      maxInterestRate: 9.0
+      minLoanTerm: 5
+      maxLoanTerm: 30
+      maxExistingEmis: 2
+    - loanType: PERSONAL_LOAN
+      minCibilScore: 650
+      maxCibilScore: 900
+      minIncome: 20000
+      maxIncome: 500000
+      minInterestRate: 10.0
+      maxInterestRate: 15.0
+      minLoanTerm: 1
+      maxLoanTerm: 5
+      maxExistingEmis: 3
+
+bank-branches:
+  banks:
+    - name: HDFC
+      branches:
+        - name: Hyderabad
+          ifsc: HDFC0001234
+        - name: Mumbai
+          ifsc: HDFC0005678
+    - name: ICICI
+      branches:
+        - name: Bangalore
+          ifsc: ICIC0004321
+        - name: Chennai
+          ifsc: ICIC0008765
+    - name: SBI
+      branches:
+        - name: Delhi
+          ifsc: SBI0001111
+        - name: Kolkata
+          ifsc: SBI0002222
+    - name: Axis Bank
+      branches:
+        - name: Pune
+          ifsc: AXIS0003333
+        - name: Ahmedabad
+          ifsc: AXIS0004444
+    - name: Kotak Mahindra Bank
+      branches:
+        - name: Jaipur
+          ifsc: KOTAK0005555
+        - name: Lucknow
+          ifsc: KOTAK0006666
+    - name: Yes Bank
+      branches:
+        - name: Chandigarh
+          ifsc: YES0007777
+        - name: Surat
+          ifsc: YES0008888
+    - name: Punjab National Bank
+      branches:
+        - name: Amritsar
+          ifsc: PNB0009999
+        - name: Ludhiana
+          ifsc: PNB0000001
+    - name: Bank of Baroda
+      branches:
+        - name: Vadodara
+          ifsc: BARODA0001234
+        - name: Rajkot
+          ifsc: BARODA0005678
+

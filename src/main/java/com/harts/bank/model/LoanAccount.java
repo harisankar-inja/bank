@@ -1,7 +1,7 @@
 package com.harts.bank.model;
 
 import com.harts.bank.enums.AccountType;
-import com.harts.bank.enums.SubAccountType;
+import com.harts.bank.enums.LoanType;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -16,7 +16,7 @@ public class LoanAccount {
     private String loanAccountNumber;
     private String linkedSavingsAccountNumber; // for EMI deductions
     private AccountType accountType; // should be LOAN
-    private SubAccountType subAccountType; // HOME_LOAN, PERSONAL_LOAN, AUTO_LOAN, EDUCATION_LOAN
+    private LoanType subAccountType; // HOME_LOAN, PERSONAL_LOAN, AUTO_LOAN, EDUCATION_LOAN
     private double loanAmount;
     private double emiAmount;
     private int pendingEmis; // to track how many EMIs are pending for the loan

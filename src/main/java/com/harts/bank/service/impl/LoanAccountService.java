@@ -2,9 +2,12 @@ package com.harts.bank.service.impl;
 
 import com.harts.bank.api.request.LoanAccountRequest;
 import com.harts.bank.api.response.LoanAccountResponse;
+import com.harts.bank.config.BankBranchesConfig;
+import com.harts.bank.config.LoanEligibilityConfig;
 import com.harts.bank.enums.AccountType;
 import com.harts.bank.exceptions.AccountNotFoundException;
 import com.harts.bank.exceptions.CustomerNotFoundException;
+import com.harts.bank.exceptions.InvalidRequestException;
 import com.harts.bank.exceptions.LoanNotEligibleException;
 import com.harts.bank.model.Customer;
 import com.harts.bank.model.LoanAccount;
@@ -16,23 +19,31 @@ import com.harts.bank.service.AccountService;
 import com.harts.bank.service.CustomerService;
 import com.harts.bank.service.LoanEligibilityService;
 import com.harts.bank.utils.CommonUtils;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.harts.bank.utils.CommonUtils.calculateMidCreditScore;
+
 @Service
 @RequiredArgsConstructor
 public class LoanAccountService implements AccountService<LoanAccountRequest, LoanAccountResponse> {
 
     private final CustomerRepo customerRepo;
-    private final CustomerService customerService;
     private final SavingsAccountRepo accountRepo;
-    private final SavingsAccountService savingsAccountService;
     private final LoanEligibilityService loanEligibilityService;
     private final LoanAccountRepo loanAccountRepo;
+
+    @Autowired
+    private BankBranchesConfig bankBranchesConfig;
+    @Autowired
+    private LoanEligibilityConfig loanEligibilityConfig;
+    private int existingEmis;
 
     /***
      * Loan account creation is a two step process, first we need to create a savings account for the customer (if not already exists)
@@ -42,6 +53,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
      */
     @Override
     public LoanAccountResponse createAccount(LoanAccountRequest accountRequest) {
+        validateBankDetails(accountRequest.getBankName(), accountRequest.getBankBranch(), accountRequest.getIfscCode());
         Optional<Customer> customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
         if(customer.isEmpty()){
             throw new CustomerNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
@@ -56,26 +68,57 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
             throw new AccountNotFoundException("Customer with Aadhaar number " + accountRequest.getAadharNumber() +
                     " does not have a savings account in bank " + accountRequest.getBankName() + ". Cannot create loan account.");
         }
-        // Validate loan eligibility
         List<LoanAccount> loanAccounts = loanAccountRepo.getLoanAccountsByPanNum(customer.get().getPanNumber());
         LoanEligibilityResponse eligibility = loanEligibilityService.validateLoanAccountRequest(accountRequest, customer.get(), savingsAccount.get(), loanAccounts);
         if (!eligibility.isEligible()) {
             throw new LoanNotEligibleException("Loan not eligible: " + eligibility.getMessage() + ". Eligible amount: " + eligibility.getEligibleAmount());
         }
-        LoanAccountResponse account = createLoanAccount(accountRequest, customer.get(), savingsAccount.get(), eligibility.getEligibleAmount());
+        existingEmis = loanAccounts.size();
+        return createLoanAccount(accountRequest, customer.get(), savingsAccount.get(), eligibility.getEligibleAmount());
+    }
 
-        return account;
+    private void validateBankDetails(@NotBlank String bankName, @NotBlank String bankBranch, @NotBlank String ifscCode) {
+        if (bankBranchesConfig.getBanks() == null) {
+            throw new IllegalStateException("Bank branches configuration not loaded. Please check your YAML and application.yml import.");
+        }
+        boolean valid = bankBranchesConfig.getBanks().stream()
+                .filter(b -> b.getName().equalsIgnoreCase(bankName))
+                .flatMap(b -> b.getBranches().stream())
+                .anyMatch(br -> br.getName().equalsIgnoreCase(bankBranch) && br.getIfsc().equalsIgnoreCase(ifscCode));
+        if (!valid) {
+            throw new InvalidRequestException("Invalid bank/branch/IFSC combination for bank: " + bankName + ", branch: " + bankBranch + ", IFSC: " + ifscCode);
+        }
     }
 
     private LoanAccountResponse createLoanAccount(LoanAccountRequest accountRequest, Customer customer, SavingsAccount savingsAccount, double eligibleAmount) {
         String loanAccountNum = CommonUtils.generateRandomNumber(8); // Todo: Implement logic to generate unique loan account number
         LoanAccount account = new LoanAccount();
+        if(accountRequest.isInterestRateAndTermAutoCal()) {
+            Optional<LoanEligibilityConfig.Loan> loan = loanEligibilityConfig.getLoans().stream()
+                    .filter(l -> l.getLoanType().equalsIgnoreCase(accountRequest.getSubAccountType().name()))
+                    .findFirst();
+            if (loan.isEmpty()) {
+                throw new InvalidRequestException("No loan eligibility configuration found for loan type: " + accountRequest.getSubAccountType().name());
+            }
+            accountRequest.setInterestRate(findLoanInterestRate(accountRequest, loan.get()));
+            accountRequest.setLoanTermInYears(findLoanTerm(accountRequest, loan.get()));
+        }
         setLoanAccountModel(account, accountRequest, customer, loanAccountNum, savingsAccount.getAccountNumber(), eligibleAmount);
         loanAccountRepo.persist(account);
 
         LoanAccountResponse accountResponse = new LoanAccountResponse();
         mapLoanAccountRequestToResponse(accountResponse, accountRequest, customer, loanAccountNum);
         return accountResponse;
+    }
+
+    private int findLoanTerm(LoanAccountRequest accountRequest, LoanEligibilityConfig.Loan loan) {
+        int avgCredScore = calculateMidCreditScore(loan);
+        return accountRequest.getCreditScore() >= avgCredScore ? loan.getMaxLoanTerm() : loan.getMinLoanTerm();
+    }
+
+    private double findLoanInterestRate(LoanAccountRequest accountRequest, LoanEligibilityConfig.Loan loan) {
+        int avgCredScore = calculateMidCreditScore(loan);
+        return accountRequest.getCreditScore() >= avgCredScore ? loan.getMinInterestRate() : loan.getMaxInterestRate();
     }
 
     private void setLoanAccountModel(LoanAccount account, LoanAccountRequest accountRequest, Customer customer,
@@ -86,16 +129,16 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         account.setLoanAccountNumber(loanAccountNum); // Generate unique account number
         account.setLinkedSavingsAccountNumber(savingsAccNum);
         account.setAccountType(AccountType.LOAN);
-        account.setSubAccountType(accountRequest.getSubAccountType());
+        account.setSubAccountType(accountRequest.getSubAccountType()); //TODO: change name to loanType in request and model
         account.setLoanAmount(eligibleAmount);
         account.setEmiAmount(calculateEmi(eligibleAmount, accountRequest.getInterestRate(), accountRequest.getLoanTermInYears()));
-        account.setPendingEmis(calulatePendingEmis(accountRequest.getLoanTermInYears()));
+        account.setPendingEmis(calculatePendingEmis(accountRequest.getLoanTermInYears()));
         account.setEmiDueDate(calculateEmiDueDate(LocalDate.now()));
         account.setInterestRate(accountRequest.getInterestRate());
         account.setLoanTermInYears(accountRequest.getLoanTermInYears());
         account.setCreditScore(accountRequest.getCreditScore());
         account.setAnnualIncome(accountRequest.getAnnualIncome());
-        account.setExistingEmis(accountRequest.getExistingEmis());
+        account.setExistingEmis(existingEmis);
         account.setEmploymentType(accountRequest.getEmploymentType().name());
         account.setActive(true);
         account.setLoanStartDate(calculateLoanStartDate());
@@ -104,7 +147,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         account.setUpdatedBy(accountRequest.getUpdatedBy()==null? account.getCreatedBy() : accountRequest.getUpdatedBy());
     }
 
-    private int calulatePendingEmis(int loanTermInYears) {
+    private int calculatePendingEmis(int loanTermInYears) {
         return loanTermInYears * 12; // Assuming monthly EMIs, so total EMIs = loan term in years * 12
     }
 
