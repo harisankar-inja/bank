@@ -26,6 +26,7 @@ public class CustomerService {
                 throw new UniqueConstraintException("Customer with ID " + customer.getCustomerId() + " already exists");
             }
         }
+        customer.setActive(true);
         customer.setCreatedAt(LocalDateTime.now());
         customer.setUpdatedAt(LocalDateTime.now());
         customer.setCreatedBy(customer.getCreatedBy() == null ? "system" : customer.getCreatedBy());

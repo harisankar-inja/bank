@@ -124,6 +124,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
     private void setLoanAccountModel(LoanAccount account, LoanAccountRequest accountRequest, Customer customer,
                                      String loanAccountNum, String savingsAccNum, double eligibleAmount) {
         account.setCif(customer.getCustomerId());
+        account.setBankName(accountRequest.getBankName());
         account.setPanNumber(accountRequest.getPanNumber());
         account.setAccountHolderName(customer.getFirstName() + " " + customer.getLastName());
         account.setLoanAccountNumber(loanAccountNum); // Generate unique account number
@@ -184,7 +185,7 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
         accountResponse.setAccountHolderName(customer.getFirstName() + " " + customer.getLastName());
         accountResponse.setBankName(accountRequest.getBankName());
         accountResponse.setBranchName(accountRequest.getBankBranch());
-        accountResponse.setIfscCode(accountRequest.getIfscCode());
+//        accountResponse.setIfscCode(accountRequest.getIfscCode());
         accountResponse.setAccountType(AccountType.LOAN);
         accountResponse.setLoanType(accountRequest.getLoanType());
         accountResponse.setLoanAmount(accountRequest.getLoanAmountRequested());
@@ -195,32 +196,67 @@ public class LoanAccountService implements AccountService<LoanAccountRequest, Lo
 
     @Override
     public List<LoanAccountResponse> getAccountsByCustomerInfoFile(String cif) {
-        List<LoanAccountResponse> loanAccountResponses = loanAccountRepo.getAccountsByCID(cif);
-        if (loanAccountResponses.isEmpty()) {
+        List<LoanAccount> loanAccounts = loanAccountRepo.getAccountsByCID(cif);
+        if (loanAccounts.isEmpty()) {
             throw new AccountNotFoundException("No loan accounts found for customer with CIF " + cif);
         }
-        return loanAccountResponses;
+        return getLoanAccountResponses(loanAccounts);
     }
 
     @Override
     public LoanAccountResponse getAccountDetails(String accountNumber) {
-//        Optional<LoanAccountResponse> loanAccountResponse = loanAccountRepo.findByAccountNumber(accountNumber);
-//        if(loanAccountResponse.isEmpty()) {
-//            throw new AccountNotFoundException("Loan account with account number " + accountNumber + " not found.");
-//        }
-//        return loanAccountResponse.get();
-        return null;
+        Optional<LoanAccount> loanAccount = loanAccountRepo.findByAccountNumber(accountNumber);
+        if(loanAccount.isEmpty()) {
+            throw new AccountNotFoundException("Loan account with account number " + accountNumber + " not found.");
+        }
+        LoanAccountResponse loanAccountResponse = new LoanAccountResponse();
+        setLoanAccountResponse(loanAccountResponse, loanAccount.get());
+        return loanAccountResponse;
     }
 
-    public List<LoanAccount> findAllAccounts(String bankName) {
-        return loanAccountRepo.findAllAccounts(bankName);
+    private void setLoanAccountResponse(LoanAccountResponse loanAccountResponse, LoanAccount loanAccount) {
+        loanAccountResponse.setAccountNumber(loanAccount.getLoanAccountNumber());
+        loanAccountResponse.setCif(loanAccount.getCif());
+        loanAccountResponse.setAccountHolderName(loanAccount.getAccountHolderName());
+        loanAccountResponse.setBankName(loanAccount.getBankName());
+        loanAccountResponse.setBranchName(bankBranchesConfig.getBanks().stream()
+                .filter(b -> b.getName().equalsIgnoreCase(loanAccount.getBankName()))
+                .flatMap(b -> b.getBranches().stream())
+//                .filter(br -> br.getIfsc().equalsIgnoreCase(loanAccount.getIfscCode()))
+                .findFirst()
+                .map(BankBranchesConfig.Branch::getName)
+                .orElse(null));
+//        loanAccountResponse.setIfscCode(loanAccount.getIfscCode());
+        loanAccountResponse.setAccountType(loanAccount.getAccountType());
+        loanAccountResponse.setLoanType(loanAccount.getLoanType());
+        loanAccountResponse.setLoanAmount(loanAccount.getLoanAmount());
+        loanAccountResponse.setInterestRate(loanAccount.getInterestRate());
+        loanAccountResponse.setLoanTermInYears(loanAccount.getLoanTermInYears());
+        loanAccountResponse.setActive(loanAccount.isActive());
+    }
+
+    public List<LoanAccountResponse> findAllAccounts(String bankName) {
+        List<LoanAccount> loanAccounts = loanAccountRepo.findAllAccounts(bankName);
+        if (loanAccounts.isEmpty()) {
+            throw new AccountNotFoundException("No loan accounts found for bank " + bankName);
+        }
+        return getLoanAccountResponses(loanAccounts);
+    }
+
+    private List<LoanAccountResponse> getLoanAccountResponses(List<LoanAccount> loanAccounts) {
+        return loanAccounts.stream().map(la -> {
+            LoanAccountResponse response = new LoanAccountResponse();
+            setLoanAccountResponse(response, la);
+            return response;
+        }).toList();
     }
 
 
-    public List<LoanAccount> findAllAccountsByLoanType(String bankName, String loanType) {
-        return loanAccountRepo.findAllAccounts(bankName).stream()
+    public List<LoanAccountResponse> findAllAccountsByLoanType(String bankName, String loanType) {
+        List<LoanAccount> loanAccounts = loanAccountRepo.findAllAccounts(bankName).stream()
                 .filter(a -> a.getLoanType().name().equalsIgnoreCase(loanType))
                 .toList();
+        return getLoanAccountResponses(loanAccounts);
     }
 
     public LoanEligibilityResponse checkLoanEligibility(@Valid LoanAccountRequest accountRequest) {

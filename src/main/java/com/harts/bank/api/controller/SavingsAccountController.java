@@ -9,14 +9,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/savings-account")
 @RequiredArgsConstructor
 public class SavingsAccountController {
 
     private final SavingsAccountService savingsAccountService;
 
-    @PostMapping("/savings")
+    @PostMapping("/create-savings")
     public ResponseEntity<SavingsAccountResponse> createSavingsAccount(@Valid @RequestBody SavingsAccountRequest accountRequest) {
         return new ResponseEntity<>(
                 savingsAccountService.createAccount(accountRequest),
@@ -24,21 +26,21 @@ public class SavingsAccountController {
     }
 
     @GetMapping("/cif/{cif}")
-    public ResponseEntity<?> getAccountsByCustomerInfoFile(@PathVariable String cif) {
+    public ResponseEntity<List<SavingsAccountResponse>> getAccountsByCustomerInfoFile(@PathVariable String cif) {
         return new ResponseEntity<>(
                 savingsAccountService.getAccountsByCustomerInfoFile(cif),
                 HttpStatus.OK);
     }
 
     @GetMapping("/accountNumber/{accountNumber}")
-    public ResponseEntity<?> getAccountByAccountNumber(@PathVariable String accountNumber) {
+    public ResponseEntity<SavingsAccountResponse> getAccountByAccountNumber(@PathVariable String accountNumber) {
         return new ResponseEntity<>(
                 savingsAccountService.getAccountDetails(accountNumber),
                 HttpStatus.OK);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> findAllAccounts(@RequestParam(required = false) String bankName) {
+    public ResponseEntity<List<SavingsAccountResponse>> findAllAccounts(@RequestParam(required = false) String bankName) {
         return new ResponseEntity<>(
                 savingsAccountService.findAllAccounts(bankName),
                 HttpStatus.OK);

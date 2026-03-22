@@ -15,6 +15,6 @@ public class SavingsAccountResponse {
     private String branchName;
     private String ifscCode;
     private AccountType accountType;
-    private boolean active;
+    private boolean accountActive;
     private double balance;
 }

@@ -12,6 +12,7 @@ public class LoanAccount {
 
     private String accountHolderName;
     private String cif; // cif
+    private String bankName;
     private String panNumber;
     private String loanAccountNumber;
     private String linkedSavingsAccountNumber; // for EMI deductions

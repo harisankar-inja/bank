@@ -12,8 +12,8 @@ import java.util.Optional;
 @Mapper
 public interface LoanAccountRepo {
 
-    @Insert("INSERT INTO loan_account_t (cif, pan_nbr, ln_acc_nbr, ln_acc_holder_nm, acc_typ, ln_typ, ln_amt, emi_amt, pend_emis, emi_due_dt, ln_trm_yrs, int_rate, crdt_score, ann_inc, exist_emis, emp_typ, is_active, ln_strt_dt, ln_end_dt, crt_at, updt_at, crt_by, updt_by) " +
-            "VALUES (#{cif}, #{panNumber}, #{loanAccountNumber}, #{accountHolderName}, #{accountType}, #{loanType}, #{loanAmount}, #{emiAmount}, #{pendingEmis}, #{emiDueDate}, #{loanTermInYears}, #{interestRate}, #{creditScore}, #{annualIncome}, #{existingEmis}, #{employmentType}, #{active}, #{loanStartDate}, #{loanEndDate}, NOW(), NOW(), #{createdBy}, #{updatedBy})")
+    @Insert("INSERT INTO loan_account_t (cif, bank_nm, pan_nbr, ln_acc_nbr, ln_acc_holder_nm, acc_typ, ln_typ, linked_savings_acc_nbr, ln_amt, emi_amt, pend_emis, emi_due_dt, ln_trm_yrs, int_rate, crdt_score, ann_inc, exist_emis, emp_typ, is_active, ln_strt_dt, ln_end_dt, crt_at, updt_at, crt_by, updt_by) " +
+            "VALUES (#{cif}, #{bankName}, #{panNumber}, #{loanAccountNumber}, #{accountHolderName}, #{accountType}, #{loanType}, #{linkedSavingsAccountNumber}, #{loanAmount}, #{emiAmount}, #{pendingEmis}, #{emiDueDate}, #{loanTermInYears}, #{interestRate}, #{creditScore}, #{annualIncome}, #{existingEmis}, #{employmentType}, #{active}, #{loanStartDate}, #{loanEndDate}, NOW(), NOW(), #{createdBy}, #{updatedBy})")
     int persist(LoanAccount account);
 
 
@@ -48,9 +48,9 @@ public interface LoanAccountRepo {
 
     @ResultMap("loanAccountResultMap")
     @Select("SELECT * FROM loan_account_t WHERE cif = #{cif} AND is_active = true")
-    List<LoanAccountResponse> getAccountsByCID(String cif);
+    List<LoanAccount> getAccountsByCID(String cif);
 
     @ResultMap("loanAccountResultMap")
     @Select("SELECT * FROM loan_account_t WHERE ln_acc_nbr = #{accountNumber} AND is_active = true")
-    Optional<LoanAccountResponse> findByAccountNumber(String accountNumber);
+    Optional<LoanAccount> findByAccountNumber(String accountNumber);
 }
