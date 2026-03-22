@@ -33,7 +33,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
     @Override
     @Transactional
     public SavingsAccountResponse createAccount(SavingsAccountRequest accountRequest) {
-        Optional<Customer> customer = Optional.empty();
+        Optional<Customer> customer;
         SavingsAccount savingsAccount = new SavingsAccount();
         customer = customerRepo.findByAdhaarNumWithBank(accountRequest.getAadharNumber(), accountRequest.getBankName());
         if (customer.isPresent()) {
@@ -120,6 +120,7 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
         savingsAccount.setIfscCode(accountRequest.getIfscCode());
         savingsAccount.setAccountType(accountRequest.getAccountType());
         savingsAccount.setBalance(accountRequest.getInitialDeposit());
+        savingsAccount.setActive(true);
     }
 
     private Customer buildCustomerDetails(SavingsAccountRequest accountRequest) {
@@ -146,14 +147,22 @@ public class SavingsAccountService implements AccountService<SavingsAccountReque
         account.setIfscCode(savingsAccount.getIfscCode());
         account.setAccountType(savingsAccount.getAccountType());
         account.setBalance(savingsAccount.getBalance());
-        account.setActive(savingsAccount.isActive());
+        account.setAccountActive(savingsAccount.isActive());
     }
 
-    public List<SavingsAccount> findAllAccounts(String bankName) {
+    public List<SavingsAccountResponse> findAllAccounts(String bankName) {
         List<SavingsAccount> accounts = savingsAccountRepo.findAllAccounts(bankName, AccountType.SAVINGS);
         if (accounts.isEmpty()) {
             throw new AccountNotFoundException("No accounts found for bank " + bankName);
         }
-        return accounts;
+        List<SavingsAccountResponse> accountResponses = new ArrayList<>();
+        for(SavingsAccount account : accounts) {
+            if (account.getAccountType() != LOAN) {
+                SavingsAccountResponse accountResponse = new SavingsAccountResponse();
+                mapSavingsAccountToAccount(accountResponse, account);
+                accountResponses.add(accountResponse);
+            }
+        }
+        return accountResponses;
     }
 }
